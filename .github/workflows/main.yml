@@ -1,0 +1,24 @@
+name: 24/7 Sleep Stream
+
+on:
+  schedule:
+    - cron: '0 */5 * * *'  # Restarts every 5 hours automatically
+  workflow_dispatch:       # Allows you to start it manually
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Start Infinite Stream
+        run: |
+          ffmpeg -re -stream_loop -1 -i your_video.mp4 \
+          -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
+          -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
+          -c:a aac -b:a 128k -ar 44100 \
+          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
