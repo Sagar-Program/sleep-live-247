@@ -15,18 +15,19 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Download Guaranteed Working Files
+      - name: Prepare Media
         run: |
-          # Clean up any old files first
+          # Clean up any old files
           rm -f audio.mp3 background.jpg
           
-          # Download audio (Proven source)
+          # 1. Download a proven working audio file
           wget -O audio.mp3 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
           
-          # Download image (Quoted URL to prevent shell errors)
-          wget -O background.jpg 'https://images.unsplash.com/photo-1470252649358-96940c9353d9?q=80&w=1280&h=720&auto=format&fit=crop'
+          # 2. GENERATE a professional dark blue background image (no download needed!)
+          # This creates a 1280x720 dark blue solid color image instantly
+          ffmpeg -f lavfi -i "color=c=0x000814:s=1280x720:d=1" -frames:v 1 background.jpg
           
-          # Check if files are actually there and have size
+          # Verify files exist
           ls -lh background.jpg audio.mp3
 
       - name: Start Infinite Stream
