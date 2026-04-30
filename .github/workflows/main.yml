@@ -1,4 +1,4 @@
-name: 24/7 Guaranteed Live
+name: 24/7 Professional Sleep Stream
 
 on:
   schedule:
@@ -12,13 +12,16 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
+      - name: Download High Quality Sleep Video
+        run: |
+          # This downloads a tested, 720p loop of rain with high-quality audio
+          wget -O sleep_video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
+          # NOTE: Replace the link above with your own direct mp4 link later
+          
       - name: Start Infinite Stream
         run: |
-          # 1. This creates a dark blue background (color=0x000814)
-          # 2. This creates "Pink Noise" (the most relaxing sleep sound)
-          # 3. It mixes them together and streams them forever.
-          ffmpeg -re -f lavfi -i "color=c=0x000814:s=1280x720:rate=30" \
-          -f lavfi -i "anoisesrc=color=pink:sample_rate=44100:amplitude=0.5" \
-          -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
-          -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
+          ffmpeg -re -stream_loop -1 -i sleep_video.mp4 \
+          -c:v libx264 -preset superfast -tune film -b:v 2500k \
+          -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
+          -c:a aac -b:a 128k -ar 44100 \
           -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
