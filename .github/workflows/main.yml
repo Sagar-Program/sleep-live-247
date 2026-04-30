@@ -1,4 +1,4 @@
-name: 24/7 Professional Sleep Stream
+name: 24/7 Sleep Stream
 
 on:
   schedule:
@@ -12,16 +12,12 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Download High Quality Sleep Video
-        run: |
-          # This downloads a tested, 720p loop of rain with high-quality audio
-          wget -O sleep_video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
-          # NOTE: Replace the link above with your own direct mp4 link later
-          
+      - name: Download Video
+        run: wget -O sleep_video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
+
       - name: Start Infinite Stream
         run: |
           ffmpeg -re -stream_loop -1 -i sleep_video.mp4 \
-          -c:v libx264 -preset superfast -tune film -b:v 2500k \
-          -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
-          -c:a aac -b:a 128k -ar 44100 \
-          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
+          -vcodec libx264 -preset veryfast -maxrate 3000k -bufsize 6000k \
+          -pix_fmt yuv420p -g 60 -acodec aac -b:a 128k -ar 44100 \
+          -f flv "rtmps://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
