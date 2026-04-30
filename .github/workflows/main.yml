@@ -1,4 +1,4 @@
-name: 24/7 Sleep Stream
+name: 24/7 Final Live Stream
 
 on:
   schedule:
@@ -12,12 +12,12 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Download Video
-        run: wget -O sleep_video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
+      - name: Get Video
+        run: wget -O video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
 
-      - name: Start Infinite Stream
+      - name: Force Start Stream
         run: |
-          ffmpeg -re -stream_loop -1 -i sleep_video.mp4 \
-          -vcodec libx264 -preset veryfast -maxrate 3000k -bufsize 6000k \
-          -pix_fmt yuv420p -g 60 -acodec aac -b:a 128k -ar 44100 \
-          -f flv "rtmps://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
+          ffmpeg -re -stream_loop -1 -i video.mp4 \
+          -c:v libx264 -preset superfast -b:v 3000k -maxrate 3000k -bufsize 6000k \
+          -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
+          -f flv "rtmps://a.rtmp.youtube.com:443/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
