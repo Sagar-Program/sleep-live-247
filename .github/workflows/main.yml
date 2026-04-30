@@ -15,14 +15,19 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Verify Files
+      - name: Fix and Verify Files
         run: |
-          ls -lh background.jpg audio.mp3 || echo "FILES MISSING! Make sure you uploaded background.jpg and audio.mp3"
-
+          # 1. Check if files exist
+          ls -lh background.jpg audio.mp3 || (echo "ERROR: Files not found in repo!" && exit 1)
+          
+          # 2. Repair audio.mp3 (This fixes the 'Could not seek' error)
+          ffmpeg -i audio.mp3 -c:a aac -b:a 128k -ar 44100 repaired_audio.aac
+          
       - name: Start Infinite Stream
         run: |
-          ffmpeg -re -loop 1 -i background.jpg -i audio.mp3 \
+          # We use the repaired_audio.aac and the background.jpg
+          ffmpeg -re -loop 1 -i background.jpg -i repaired_audio.aac \
           -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
           -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
-          -c:a aac -b:a 128k -ar 44100 \
-          -t 06:00:00 -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
+          -c:a copy -shortest \
+          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
