@@ -1,4 +1,4 @@
-name: 24/7 Sleep Stream
+name: 24/7 Custom Sleep Stream
 
 on:
   schedule:
@@ -15,25 +15,14 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Prepare Media
+      - name: Verify Files
         run: |
-          # Clean up any old files
-          rm -f audio.mp3 background.jpg
-          
-          # 1. Download a proven working audio file
-          wget -O audio.mp3 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
-          
-          # 2. GENERATE a professional dark blue background image (no download needed!)
-          # This creates a 1280x720 dark blue solid color image instantly
-          ffmpeg -f lavfi -i "color=c=0x000814:s=1280x720:d=1" -frames:v 1 background.jpg
-          
-          # Verify files exist
-          ls -lh background.jpg audio.mp3
+          ls -lh background.jpg audio.mp3 || echo "FILES MISSING! Make sure you uploaded background.jpg and audio.mp3"
 
       - name: Start Infinite Stream
         run: |
           ffmpeg -re -loop 1 -i background.jpg -i audio.mp3 \
           -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
           -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
-          -c:a aac -b:a 128k -ar 44100 -shortest \
-          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
+          -c:a aac -b:a 128k -ar 44100 \
+          -t 06:00:00 -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
