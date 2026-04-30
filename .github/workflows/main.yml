@@ -15,9 +15,17 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Generate and Stream
+      - name: Download Guaranteed Working Files
+        run: |
+          # Downloading a 10-minute high-quality forest/rain ambient file
+          wget -O audio.mp3 https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3
+          # Downloading a high-def 720p relaxing background image
+          wget -O background.jpg https://images.unsplash.com/photo-1470252649358-96940c9353d9?q=80&w=1280&h=720&auto=format&fit=crop
+          
+      - name: Start Infinite Stream
         run: |
           ffmpeg -re -loop 1 -i background.jpg -i audio.mp3 \
-          -c:v libx264 -preset superfast -tune stillimage -pix_fmt yuv420p \
-          -shortest -strict -2 -c:a aac -b:a 128k -ar 44100 \
+          -c:v libx264 -preset superfast -tune stillimage -b:v 2000k \
+          -maxrate 2000k -bufsize 4000k -pix_fmt yuv420p -g 60 \
+          -c:a aac -b:a 128k -ar 44100 -shortest \
           -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
