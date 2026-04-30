@@ -1,4 +1,4 @@
-name: 24/7 Final Live Stream
+name: 24/7 Force Stream
 
 on:
   schedule:
@@ -9,15 +9,16 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Get Video
+      - name: Download Reliable Video
         run: wget -O video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
 
-      - name: Force Start Stream
-        run: |
-          ffmpeg -re -stream_loop -1 -i video.mp4 \
-          -c:v libx264 -preset superfast -b:v 3000k -maxrate 3000k -bufsize 6000k \
-          -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
-          -f flv "rtmps://a.rtmp.youtube.com:443/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
+      - name: Run Stream Script
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: python3 stream.py
