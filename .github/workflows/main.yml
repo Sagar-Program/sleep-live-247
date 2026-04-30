@@ -1,4 +1,4 @@
-name: 24/7 Custom Sleep Stream
+name: 24/7 Guaranteed Live
 
 on:
   schedule:
@@ -9,25 +9,16 @@ jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Fix and Verify Files
-        run: |
-          # 1. Check if files exist
-          ls -lh background.jpg audio.mp3 || (echo "ERROR: Files not found in repo!" && exit 1)
-          
-          # 2. Repair audio.mp3 (This fixes the 'Could not seek' error)
-          ffmpeg -i audio.mp3 -c:a aac -b:a 128k -ar 44100 repaired_audio.aac
-          
       - name: Start Infinite Stream
         run: |
-          # We use the repaired_audio.aac and the background.jpg
-          ffmpeg -re -loop 1 -i background.jpg -i repaired_audio.aac \
+          # 1. This creates a dark blue background (color=0x000814)
+          # 2. This creates "Pink Noise" (the most relaxing sleep sound)
+          # 3. It mixes them together and streams them forever.
+          ffmpeg -re -f lavfi -i "color=c=0x000814:s=1280x720:rate=30" \
+          -f lavfi -i "anoisesrc=color=pink:sample_rate=44100:amplitude=0.5" \
           -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
-          -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
-          -c:a copy -shortest \
+          -pix_fmt yuv420p -g 60 -c:a aac -b:a 128k -ar 44100 \
           -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
