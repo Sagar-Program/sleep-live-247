@@ -17,7 +17,7 @@ jobs:
 
       - name: Start Infinite Stream
         run: |
-          ffmpeg -re -stream_loop -1 -i your_video.mp4 \
+          ffmpeg -re -stream_loop -1 -i ./sleep_loop.mp4 \
           -c:v libx264 -preset superfast -tune stillimage -b:v 2500k \
           -maxrate 2500k -bufsize 5000k -pix_fmt yuv420p -g 60 \
           -c:a aac -b:a 128k -ar 44100 \
