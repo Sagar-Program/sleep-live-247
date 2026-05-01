@@ -1,61 +1,51 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/.github/workflows/youtube-live.yml b/.github/workflows/youtube-live.yml
-new file mode 100644
-index 0000000000000000000000000000000000000000..49949a55d0293bdafd7cc0bbb0cda6323481be95
---- /dev/null
-+++ b/.github/workflows/youtube-live.yml
-@@ -0,0 +1,51 @@
-+name: YouTube 24x7 Stream
-+
-+on:
-+  workflow_dispatch:
-+
-+concurrency:
-+  group: youtube-live-stream
-+  cancel-in-progress: true
-+
-+jobs:
-+  stream:
-+    runs-on: ubuntu-latest
-+    timeout-minutes: 360
-+    steps:
-+      - name: Checkout
-+        uses: actions/checkout@v4
-+
-+      - name: Install FFmpeg + Python
-+        run: |
-+          sudo apt-get update
-+          sudo apt-get install -y ffmpeg python3
-+
-+      - name: Validate required files
-+        run: |
-+          set -euo pipefail
-+          if [ ! -f sleep_loop.mp4 ]; then
-+            echo "ERROR: sleep_loop.mp4 not found in repo root"
-+            exit 1
-+          fi
-+
-+
-+
-+      - name: Repair stream.py if diff text was pasted by mistake
-+        run: |
-+          set -euo pipefail
-+          if head -n 1 stream.py | grep -q '^diff --git'; then
-+            echo "Detected diff header in stream.py. Restoring clean template."
-+            cp templates/stream_clean.py stream.py
-+          fi
-+
-+      - name: Verify stream.py syntax
-+        run: |
-+          set -euo pipefail
-+          python3 -m py_compile stream.py
-+
-+      - name: Start YouTube stream loop
-+        env:
-+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
-+        run: |
-+          set -euo pipefail
-+          python3 stream.py
- 
-EOF
-)
+name: YouTube 24x7 Stream
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: youtube-live-stream
+  cancel-in-progress: true
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg + Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg python3
+
+      - name: Validate required files
+        run: |
+          set -euo pipefail
+          if [ ! -f sleep_loop.mp4 ]; then
+            echo "ERROR: sleep_loop.mp4 not found in repo root"
+            exit 1
+          fi
+
+
+
+      - name: Repair stream.py if diff text was pasted by mistake
+        run: |
+          set -euo pipefail
+          if head -n 1 stream.py | grep -q '^diff --git'; then
+            echo "Detected diff header in stream.py. Restoring clean template."
+            cp templates/stream_clean.py stream.py
+          fi
+
+      - name: Verify stream.py syntax
+        run: |
+          set -euo pipefail
+          python3 -m py_compile stream.py
+
+      - name: Start YouTube stream loop
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: |
+          set -euo pipefail
+          python3 stream.py
