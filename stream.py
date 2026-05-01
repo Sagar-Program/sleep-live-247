@@ -1,4 +1,3 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/stream.py b/stream.py
 index 626f98807b2d1088d93f8c1c83987a48d9a0884f..c3bfac188891d8d02ed36a5d0ca232dd025e9575 100644
 --- a/stream.py
@@ -117,6 +116,3 @@ index 626f98807b2d1088d93f8c1c83987a48d9a0884f..c3bfac188891d8d02ed36a5d0ca232dd
  if __name__ == "__main__":
 -    start_stream()
 +    main()
- 
-EOF
-)
