@@ -1,0 +1,36 @@
+name: YouTube 24x7 Stream
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: youtube-live-stream
+  cancel-in-progress: true
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg + Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg python3
+
+      - name: Validate required files
+        run: |
+          set -euo pipefail
+          if [ ! -f sleep_loop.mp4 ]; then
+            echo "ERROR: sleep_loop.mp4 not found in repo root"
+            exit 1
+          fi
+
+      - name: Start YouTube stream loop
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: |
+          set -euo pipefail
+          python3 stream.py
