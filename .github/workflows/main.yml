@@ -1,0 +1,56 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/.github/workflows/main.yml b/.github/workflows/main.yml
+index 1ccb833634bb3bdda0cbb9ef6d8bb1db0492895d..9a4d93ac4692bf1061fb75a6d74807cb93b869c4 100644
+--- a/.github/workflows/main.yml
++++ b/.github/workflows/main.yml
+@@ -1,20 +1,36 @@
+-name: 24/7 Force Connection
++name: YouTube 24x7 Stream
++
+ on:
+   workflow_dispatch:
++
++concurrency:
++  group: youtube-live-stream
++  cancel-in-progress: true
++
+ jobs:
+   stream:
+     runs-on: ubuntu-latest
++    timeout-minutes: 360
+     steps:
+-      - name: Install FFmpeg
+-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
++      - name: Checkout
++        uses: actions/checkout@v4
+ 
+-      - name: Download Video
+-        run: wget -O video.mp4 'https://github.com/intel-iot-devkit/sample-videos/raw/master/classroom.mp4'
++      - name: Install FFmpeg + Python
++        run: |
++          sudo apt-get update
++          sudo apt-get install -y ffmpeg python3
++
++      - name: Validate required files
++        run: |
++          set -euo pipefail
++          if [ ! -f sleep_loop.mp4 ]; then
++            echo "ERROR: sleep_loop.mp4 not found in repo root"
++            exit 1
++          fi
+ 
+-      - name: Force Connection
++      - name: Start YouTube stream loop
++        env:
++          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+         run: |
+-          # We are using the most basic RTMP URL to avoid handshake errors
+-          ffmpeg -re -stream_loop -1 -i video.mp4 \
+-          -c:v libx264 -preset superfast -pix_fmt yuv420p -g 60 \
+-          -c:a aac -b:a 128k -ar 44100 \
+-          -f flv "rtmp://a.rtmp.youtube.com/live2/${{ secrets.YOUTUBE_STREAM_KEY }}"
++          set -euo pipefail
++          python3 stream.py
+ 
+EOF
+)
