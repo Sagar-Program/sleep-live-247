@@ -29,6 +29,20 @@ jobs:
           test -f sleep_loop.mp4
           python3 -m py_compile stream.py
 
+
+      - name: Restore canonical stream.py before run
+        run: |
+          set -euo pipefail
+          cp templates/stream_clean.py stream.py
+
+      - name: Detect accidental diff-text corruption
+        run: |
+          set -euo pipefail
+          if head -n 5 stream.py | grep -Eq '^(diff --git|index [0-9a-f]{7,})'; then
+            echo "ERROR: stream.py still contains diff text after restore"
+            exit 1
+          fi
+
       - name: Run stream for up to 5 hours
         env:
           YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
