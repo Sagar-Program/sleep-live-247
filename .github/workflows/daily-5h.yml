@@ -1,0 +1,37 @@
+name: YouTube Daily 5h (Hosted)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs every day at 18:00 UTC
+    - cron: '0 18 * * *'
+
+concurrency:
+  group: youtube-daily-5h
+  cancel-in-progress: true
+
+jobs:
+  stream_daily:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg + Python
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg python3
+
+      - name: Validate required files
+        run: |
+          set -euo pipefail
+          test -f sleep_loop.mp4
+          python3 -m py_compile stream.py
+
+      - name: Run stream for up to 5 hours
+        env:
+          YOUTUBE_STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        run: |
+          set -euo pipefail
+          python3 stream.py
